@@ -23,23 +23,6 @@ def update_time(label, minutes, seconds):
     label.config(text=f"{minutes}:{seconds:02d}")
     update_replica()  # Aggiorna la replica del tabellone
 
-# def toggle_possession():
-#     current = poss_label.cget("text")
-#     new_possession = ">" if current == "<" else "<"
-#     poss_label.config(text=new_possession)
-#     update_replica()  # Aggiorna la replica del tabellone
-
-# def toggle_bonus(team):
-#     if team == "locali":
-#         current = bonus_locali.cget("text")
-#         new_bonus = "●" if current == "○" else "○"
-#         bonus_locali.config(text=new_bonus)
-#     elif team == "ospiti":
-#         current = bonus_ospiti.cget("text")
-#         new_bonus = "●" if current == "○" else "○"
-#         bonus_ospiti.config(text=new_bonus)
-#     update_replica()  # Aggiorna la replica del tabellone
-
 def set_time():
     # Mostra finestra per inserire minuti e secondi
     minutes = simpledialog.askinteger("Imposta Tempo", "Inserisci i minuti:")
@@ -93,16 +76,6 @@ def update_replica():
     ospiti_score_replica.config(text=ospiti_score["text"])
     period_value_replica.config(text=period_value["text"])
     time_label_replica.config(text=time_label["text"])
-    # poss_label_replica.config(text=poss_label["text"])
-    # bonus_locali_replica.config(text=bonus_locali["text"])
-    # bonus_ospiti_replica.config(text=bonus_ospiti["text"])
-
-# # Funzione per attivare/disattivare la modalità fullscreen
-# def toggle_fullscreen():
-#     is_fullscreen = tabellone.attributes("-fullscreen")
-#     tabellone.attributes("-fullscreen", not is_fullscreen)
-
-
 
 # Flag per controllare il timer
 running = False
@@ -145,20 +118,6 @@ period_value.grid(row=1, column=1)
 time_label = tk.Label(tabellone, text="10:00", bg="black", fg="red", font=time_font)
 time_label.grid(row=2, column=1, pady=20)
 
-# # Possesso - posizione cambiata sotto il periodo
-# poss_label = tk.Label(tabellone, text="<", bg="black", fg="red", font=period_font)
-# poss_label.grid(row=3, column=1, padx=20)
-
-# # Bonus tra i due indicatori
-# bonus_locali = tk.Label(tabellone, text="○", bg="black", fg="red", font=period_font)
-# bonus_locali.grid(row=5, column=0, sticky="e")
-#
-# bonus_label = tk.Label(tabellone, text="BONUS", bg="black", fg="green", font=small_font)
-# bonus_label.grid(row=5, column=1)
-#
-# bonus_ospiti = tk.Label(tabellone, text="○", bg="black", fg="red", font=period_font)
-# bonus_ospiti.grid(row=5, column=2, sticky="w")
-
 # Finestra del controller
 controller = tk.Tk()
 controller.title("Controller - Segnapunti")
@@ -183,15 +142,6 @@ period_value_replica.grid(row=1, column=1)
 time_label_replica = tk.Label(replica_tabellone, text="10:00", bg="black", fg="red", font=time_font)
 time_label_replica.grid(row=2, column=1, pady=20)
 
-poss_label_replica = tk.Label(replica_tabellone, text="<", bg="black", fg="red", font=period_font)
-poss_label_replica.grid(row=3, column=1, padx=20)
-
-bonus_locali_replica = tk.Label(replica_tabellone, text="○", bg="black", fg="red", font=period_font)
-bonus_locali_replica.grid(row=5, column=0, sticky="e")
-
-bonus_ospiti_replica = tk.Label(replica_tabellone, text="○", bg="black", fg="red", font=period_font)
-bonus_ospiti_replica.grid(row=5, column=2, sticky="w")
-
 # Pulsanti nel controller
 button_frame = tk.Frame(controller, bg="black")
 button_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
@@ -212,9 +162,6 @@ add_locali_button.grid(row=0, column=0, padx=10, pady=10)
 sub_locali_button = tk.Button(button_frame, text="-HOME", font=("Arial", 50), bg="white", command=lambda: update_score(locali_score, -1))
 sub_locali_button.grid(row=1, column=0, padx=10, pady=10)
 
-# bonus_locali_button = tk.Button(button_frame, text="BONUS HOME", font=small_font, bg="white", command=lambda: toggle_bonus("locali"))
-# bonus_locali_button.grid(row=2, column=0, padx=10, pady=10)
-
 change_locali_name_button = tk.Button(button_frame, text="Cambia Nome HOME", font=small_font, command=lambda: change_team_name("locali"))
 change_locali_name_button.grid(row=3, column=0, padx=10, pady=10)
 
@@ -224,9 +171,6 @@ add_ospiti_button.grid(row=0, column=2, padx=10, pady=10)
 
 sub_ospiti_button = tk.Button(button_frame, text="-VISITOR", font=("Arial", 50), bg="white", command=lambda: update_score(ospiti_score, -1))
 sub_ospiti_button.grid(row=1, column=2, padx=10, pady=10)
-
-# bonus_ospiti_button = tk.Button(button_frame, text="BONUS VISITOR", font=small_font, bg="white", command=lambda: toggle_bonus("ospiti"))
-# bonus_ospiti_button.grid(row=2, column=2, padx=10, pady=10)
 
 change_ospiti_name_button = tk.Button(button_frame, text="Cambia Nome VISITOR", font=small_font, command=lambda: change_team_name("ospiti"))
 change_ospiti_name_button.grid(row=3, column=2, padx=10, pady=10)
@@ -243,8 +187,5 @@ decrease_period_button.grid(row=2, column=1, padx=10, pady=10)
 
 start_stop_button = tk.Button(button_frame, text="START", font=("Arial", 60), bg="green", command=start_stop_timer)
 start_stop_button.grid(row=3, column=1, padx=10, pady=10)
-
-# poss_button = tk.Button(button_frame, text="Possesso", font=small_font, bg="white", command=toggle_possession)
-# poss_button.grid(row=4, column=1, padx=10, pady=10)
 
 controller.mainloop()
