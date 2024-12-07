@@ -37,7 +37,7 @@ def update_score(label, increment, display_label=None):
 
 def update_period(label, increment, period_display_label=None):
     """Aggiorna il periodo del gioco e, se fornito, aggiorna anche l'etichetta nel controller."""
-    period_values = ["1", "2", "3", "4", "1OT", "2OT", "3OT", "4OT", "5OT", "6OT", "7OT", "8OT", "9OT"]
+    period_values = ["1QT", "2QT", "3QT", "4QT", "1OT", "2OT", "3OT", "4OT", "5OT", "6OT", "7OT", "8OT", "9OT"]
     try:
         current_index = period_values.index(label["text"])
         new_index = (current_index + increment) % len(period_values)
@@ -45,7 +45,7 @@ def update_period(label, increment, period_display_label=None):
         if period_display_label:
             period_display_label.config(text=period_values[new_index])  # Aggiorna l'etichetta nel controller
     except ValueError:
-        label.config(text="1")
+        label.config(text="1QT")
 
 def update_time(label, minutes, seconds, time_display_label=None):
     """Aggiorna il tempo visualizzato e, se fornito, aggiorna anche l'etichetta nel controller."""
@@ -110,55 +110,58 @@ def on_close_controller():
 running = False
 remaining_time = 600
 
-# Creazione del tabellone
+# Creazione del TABELLONE
 tabellone = tk.Tk()
 tabellone.title("Tabellone Segnapunti Basket")
-tabellone.configure(bg="white")
+tabellone.configure(bg="black")
+tabellone.grid_anchor("center")
 
 set_fullscreen_on_secondary_screen()
 
 # Configura le righe e le colonne per il layout dinamico
-tabellone.grid_rowconfigure(0, weight=1)
-tabellone.grid_rowconfigure(1, weight=2)
-tabellone.grid_rowconfigure(2, weight=2)
+# tabellone.grid_rowconfigure(0, weight=1)
+# tabellone.grid_columnconfigure(0, weight=1)
+#
+# tabellone.grid_rowconfigure(1, weight=2)
+# tabellone.grid_columnconfigure(1, weight=2)
+#
+# tabellone.grid_rowconfigure(2, weight=2)
+# tabellone.grid_columnconfigure(2, weight=1)
 
-tabellone.grid_columnconfigure(0, weight=1)
-tabellone.grid_columnconfigure(1, weight=2)
-tabellone.grid_columnconfigure(2, weight=1)
-
-# Font più grandi per punteggio e tempo
-score_font = font.Font(family="Arial", size=300, weight="bold")  # Più grande per il punteggio
-period_font = font.Font(family="Arial", size=75, weight="bold")  # Font per il periodo
-time_font = font.Font(family="Arial", size=200, weight="bold")  # Più grande per il timer
-small_font = font.Font(family="Arial", size=60, weight="bold")  # Font più grande per i pulsanti
+# Font più grandi per punteggio e tempo, FONT DISPONIBILI: Arial, Score Board, LCD Solid, 2 5x9 Scoreboard
+score_font = font.Font(family="2 5x9 Scoreboard", size=125, weight="bold")
+period_font = font.Font(family="LCD Solid", size=80, weight="bold")
+time_font = font.Font(family="2 5x9 Scoreboard", size=120, weight="bold")
+small_font = font.Font(family="LCD Solid", size=70, weight="bold")
 
 # Etichette per il punteggio
 locali_label = tk.Label(tabellone, text="HOME", bg="black", fg="white", font=small_font)
-locali_label.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
-locali_score = tk.Label(tabellone, text="20", bg="black", fg="green", font=score_font)
-locali_score.grid(row=1, column=0, padx=40, pady=10, sticky="nsew")
+locali_label.grid(row=1, column=0, pady=5)
+locali_score = tk.Label(tabellone, text="120", bg="black", fg="green", font=score_font)
+locali_score.grid(row=2, column=0)
 
 ospiti_label = tk.Label(tabellone, text="VISITOR", bg="black", fg="white", font=small_font)
-ospiti_label.grid(row=0, column=2, padx=10, pady=10, sticky="nsew")
-ospiti_score = tk.Label(tabellone, text="30", bg="black", fg="green", font=score_font)
-ospiti_score.grid(row=1, column=2, padx=40, pady=10, sticky="nsew")
+ospiti_label.grid(row=1, column=2, pady=5)
+ospiti_score = tk.Label(tabellone, text="120", bg="black", fg="green", font=score_font)
+ospiti_score.grid(row=2, column=2)
 
 # Etichetta per il periodo
-period_label = tk.Label(tabellone, text="PERIOD", bg="black", fg="white", font=period_font)
-period_label.grid(row=2, column=1, padx=20, pady=10, sticky="nsew")
+# period_label = tk.Label(tabellone, text="PERIOD", bg="black", fg="white", font=period_font)
+# period_label.grid(row=2, column=1, padx=20, pady=10, sticky="nsew")
 
 # Valore del periodo
-period_value = tk.Label(tabellone, text="1", bg="black", fg="red", font=period_font)
-period_value.grid(row=1, column=1, padx=20, pady=10, sticky="nsew")
+period_value = tk.Label(tabellone, text="1QT", bg="black", fg="red", font=period_font)
+period_value.grid(row=1, column=1, padx = 20)
 
 # Etichetta per il timer
 time_label = tk.Label(tabellone, text="10:00", bg="black", fg="red", font=time_font)
-time_label.grid(row=0, column=1, pady=20, sticky="nsew")
+time_label.grid(row=0, columnspan=3, stick="nsew")
 
-# Creazione del controller
+# Creazione del CONTROLLER
 controller = tk.Tk()
 controller.title("Controller - Segnapunti")
 controller.configure(bg="black")
+controller.grid_anchor("center")
 controller.protocol("WM_DELETE_WINDOW", on_close_controller)
 
 button_frame = tk.Frame(controller, bg="blue")
@@ -171,26 +174,26 @@ ospiti_score_display = tk.Label(controller, text="0", bg="black", fg="green", fo
 ospiti_score_display.grid(row=1, column=2, padx=40)
 
 # Etichetta per visualizzare il periodo nel controller
-period_value_display = tk.Label(controller, text="1", bg="black", fg="red", font=("Arial", 40))
+period_value_display = tk.Label(controller, text="1QT", bg="black", fg="red", font=("Arial", 40))
 period_value_display.grid(row=1, column=1)
 
 # Etichetta per visualizzare il tempo nel controller
 time_label_display = tk.Label(controller, text="10:00", bg="black", fg="red", font=("Arial", 70))
 time_label_display.grid(row=4, column=1)
 
-# Pulsanti HOME con punteggio in mezzo
+# Pulsanti HOME del controller
 tk.Button(controller, text="+HOME", font=("Arial", 50), bg="white", command=lambda: update_score(locali_score, 1, locali_score_display)).grid(row=0, column=0)
 tk.Button(controller, text="-HOME", font=("Arial", 50), bg="white", command=lambda: update_score(locali_score, -1, locali_score_display)).grid(row=2, column=0)
 
-# Pulsanti VISITOR con punteggio in mezzo
+# Pulsanti VISITOR del controller
 tk.Button(controller, text="+VISITOR", font=("Arial", 50), bg="white", command=lambda: update_score(ospiti_score, 1, ospiti_score_display)).grid(row=0, column=2)
 tk.Button(controller, text="-VISITOR", font=("Arial", 50), bg="white", command=lambda: update_score(ospiti_score, -1, ospiti_score_display)).grid(row=2, column=2)
 
-# Pulsanti periodo con valore in mezzo
+# Pulsanti PERIOD del controller
 tk.Button(controller, text="+ Period", font=("Arial", 30), bg="white", command=lambda: update_period(period_value, 1, period_value_display)).grid(row=0, column=1)
 tk.Button(controller, text="- Period", font=("Arial", 30), bg="white", command=lambda: update_period(period_value, -1, period_value_display)).grid(row=2, column=1)
 
-# Timer accanto a START/STOP
+#  Pulsanti TIMER del controller
 tk.Button(controller, text="Imposta Tempo", font=small_font, bg="white", command=set_time).grid(row=3, column=0)
 start_stop_button = tk.Button(controller, text="START", font=("Arial", 60), bg="green", command=start_stop_timer)
 start_stop_button.grid(row=3, column=1)
@@ -203,6 +206,7 @@ tk.Button(controller, text="Cambia Nome VISITOR", font=small_font, bg="white", c
 print("\n********************************************************************")
 print("Prima dell'avvio in impostazioni >> sistema >> schermo \nselezionare il monitor secondario e spuntare \"Imposta come schermo principale\"")
 print("********************************************************************")
-print("Segnapunti sviluppato da Vincenzo Morabito")
+print("\nHandcrafted by Vincenzo Morabito\n")
 print("********************************************************************")
+
 controller.mainloop()
