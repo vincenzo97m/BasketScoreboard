@@ -15,16 +15,30 @@ def play_alarm_sound():
 def set_fullscreen_on_secondary_screen():
     monitors = get_monitors()  # Ottieni tutte le informazioni sugli schermi connessi
     if len(monitors) > 1:
-        # Se ci sono più monitor, seleziona il secondo (secondario)
+        # Se ci sono più monitor, seleziona quello principale
         secondary_monitor = monitors[1]
 
-        # Imposta la finestra per il monitor secondario
+        # Imposta la finestra per il monitor principale
         tabellone.lift()
         tabellone.geometry(
             f"{secondary_monitor.width}x{secondary_monitor.height}+{secondary_monitor.x}+{secondary_monitor.y}")
-        tabellone.attributes('-fullscreen', True)  # Rendi la finestra fullscreen
+        # Rendi la finestra fullscreen
+        tabellone.attributes('-fullscreen', True)
     else:
-        print("Non ci sono schermi secondari connessi.")
+        print("\n\n!!!!!Non ci sono schermi secondari connessi.!!!!!")
+
+# Funzione per aprire la finestra controller sul monitor secondario
+def set_controller_on_secondary_screen():
+    monitors = get_monitors()  # Ottieni tutte le informazioni sugli schermi connessi
+    if len(monitors) > 1:
+        # Se ci sono più monitor, seleziona il secondario
+        primary_monitor = monitors[0]
+
+        # Imposta la finestra per il monitor secondario
+        controller.geometry(
+            f"{primary_monitor.width}x{primary_monitor.height}+{primary_monitor.x}+{primary_monitor.y}")
+    else:
+        print("\n\n!!!!!Non ci sono schermi secondari connessi.!!!!!")
 
 # Funzioni per gestire il tabellone
 def update_score(label, increment, display_label=None):
@@ -55,10 +69,10 @@ def update_time(label, minutes, seconds, time_display_label=None):
 
 def set_time():
     """Imposta il tempo iniziale."""
-    minutes = simpledialog.askinteger("Imposta Tempo", "Inserisci solo il numero dei minuti (da 0 a 10), se 0 scrivi 0:")
+    minutes = simpledialog.askinteger("Imposta Tempo", "Inserisci solo il numero dei minuti (da 0 a 10), se 0 scrivi 0:", parent=controller)
     if minutes is None or minutes > 10:
         return
-    seconds = simpledialog.askinteger("Imposta Tempo", "Inserisci solo il numero dei secondi (da 0 a 59), se 0 scrivi 0:")
+    seconds = simpledialog.askinteger("Imposta Tempo", "Inserisci solo il numero dei secondi (da 0 a 59), se 0 scrivi 0:", parent=controller)
     if seconds is None or seconds > 60:
         return
     global remaining_time
@@ -94,15 +108,19 @@ def start_timer():
     elif remaining_time == 0:  # Quando il tempo arriva a zero, suona l'allarme
         play_alarm_sound()
 
-def change_team_name(team):
+def change_team_name(team, parent):
     """Permette di cambiare il nome della squadra."""
-    new_name = simpledialog.askstring("Nome Squadra", f"Inserisci il nome della squadra {team}:")
+    new_name = simpledialog.askstring(
+        "Nome Squadra",
+        f"Inserisci il nome della squadra {team}:",
+        parent=parent  # Specifica la finestra principale come parent
+    )
     if new_name:
-        (locali_label if team == "locali" else ospiti_label).config(text=new_name.upper())
+        (locali_label if team == "HOME" else ospiti_label).config(text=new_name.upper())
 
 def on_close_controller():
     """Gestisce la chiusura della finestra del controller."""
-    if messagebox.askquestion("Conferma Chiusura", "Sei sicuro di voler chiudere Tabellone Segnapunti?") == 'yes':
+    if messagebox.askquestion("Conferma Chiusura", "Sei sicuro di voler chiudere Tabellone Segnapunti?", parent=controller) == 'yes':
         tabellone.quit()
         controller.quit()
 
@@ -118,17 +136,7 @@ tabellone.grid_anchor("center")
 
 set_fullscreen_on_secondary_screen()
 
-# Configura le righe e le colonne per il layout dinamico
-# tabellone.grid_rowconfigure(0, weight=1)
-# tabellone.grid_columnconfigure(0, weight=1)
-#
-# tabellone.grid_rowconfigure(1, weight=2)
-# tabellone.grid_columnconfigure(1, weight=2)
-#
-# tabellone.grid_rowconfigure(2, weight=2)
-# tabellone.grid_columnconfigure(2, weight=1)
-
-# Font più grandi per punteggio e tempo, FONT DISPONIBILI: Arial, Score Board, LCD Solid, 2 5x9 Scoreboard
+# Font più grandi per punteggio e tempo
 score_font = font.Font(family="2 5x9 Scoreboard", size=125, weight="bold")
 period_font = font.Font(family="LCD Solid", size=80, weight="bold")
 time_font = font.Font(family="2 5x9 Scoreboard", size=120, weight="bold")
@@ -137,23 +145,18 @@ small_font = font.Font(family="LCD Solid", size=70, weight="bold")
 # Etichette per il punteggio
 locali_label = tk.Label(tabellone, text="HOME", bg="black", fg="white", font=small_font)
 locali_label.grid(row=1, column=0, pady=5)
-locali_score = tk.Label(tabellone, text="120", bg="black", fg="green", font=score_font)
+locali_score = tk.Label(tabellone, text="0", bg="black", fg="green", font=score_font)
 locali_score.grid(row=2, column=0)
 
 ospiti_label = tk.Label(tabellone, text="VISITOR", bg="black", fg="white", font=small_font)
 ospiti_label.grid(row=1, column=2, pady=5)
-ospiti_score = tk.Label(tabellone, text="120", bg="black", fg="green", font=score_font)
+ospiti_score = tk.Label(tabellone, text="0", bg="black", fg="green", font=score_font)
 ospiti_score.grid(row=2, column=2)
 
-# Etichetta per il periodo
-# period_label = tk.Label(tabellone, text="PERIOD", bg="black", fg="white", font=period_font)
-# period_label.grid(row=2, column=1, padx=20, pady=10, sticky="nsew")
-
-# Valore del periodo
+# Periodo e timer
 period_value = tk.Label(tabellone, text="1QT", bg="black", fg="red", font=period_font)
-period_value.grid(row=1, column=1, padx = 20)
+period_value.grid(row=1, column=1, padx=20)
 
-# Etichetta per il timer
 time_label = tk.Label(tabellone, text="10:00", bg="black", fg="red", font=time_font)
 time_label.grid(row=0, columnspan=3, stick="nsew")
 
@@ -164,49 +167,62 @@ controller.configure(bg="black")
 controller.grid_anchor("center")
 controller.protocol("WM_DELETE_WINDOW", on_close_controller)
 
+# Posiziona la finestra controller sul monitor secondario
+set_controller_on_secondary_screen()
+
 button_frame = tk.Frame(controller, bg="blue")
 button_frame.grid(row=0, column=0, padx=20, pady=20)
 
 # Etichette per visualizzare i punteggi nel controller
-locali_score_display = tk.Label(controller, text="0", bg="black", fg="green", font=("Arial", 70))
+locali_score_display = tk.Label(controller, text="0", bg="black", fg="green", font=("Arial", 100))
 locali_score_display.grid(row=1, column=0, padx=40)
-ospiti_score_display = tk.Label(controller, text="0", bg="black", fg="green", font=("Arial", 70))
+ospiti_score_display = tk.Label(controller, text="0", bg="black", fg="green", font=("Arial", 100))
 ospiti_score_display.grid(row=1, column=2, padx=40)
 
 # Etichetta per visualizzare il periodo nel controller
-period_value_display = tk.Label(controller, text="1QT", bg="black", fg="red", font=("Arial", 40))
+period_value_display = tk.Label(controller, text="1QT", bg="black", fg="red", font=("Arial", 70))
 period_value_display.grid(row=1, column=1)
 
 # Etichetta per visualizzare il tempo nel controller
-time_label_display = tk.Label(controller, text="10:00", bg="black", fg="red", font=("Arial", 70))
+time_label_display = tk.Label(controller, text="10:00", bg="black", fg="red", font=("Arial", 100))
 time_label_display.grid(row=4, column=1)
 
-# Pulsanti HOME del controller
-tk.Button(controller, text="+HOME", font=("Arial", 50), bg="white", command=lambda: update_score(locali_score, 1, locali_score_display)).grid(row=0, column=0)
-tk.Button(controller, text="-HOME", font=("Arial", 50), bg="white", command=lambda: update_score(locali_score, -1, locali_score_display)).grid(row=2, column=0)
+# Pulsanti e funzioni per il controller
 
-# Pulsanti VISITOR del controller
-tk.Button(controller, text="+VISITOR", font=("Arial", 50), bg="white", command=lambda: update_score(ospiti_score, 1, ospiti_score_display)).grid(row=0, column=2)
-tk.Button(controller, text="-VISITOR", font=("Arial", 50), bg="white", command=lambda: update_score(ospiti_score, -1, ospiti_score_display)).grid(row=2, column=2)
+tk.Button(controller, text="+HOME", font=("Arial", 70), bg="white", command=lambda: update_score(locali_score, 1, locali_score_display)).grid(row=0, column=0)
+tk.Button(controller, text="-HOME", font=("Arial", 70), bg="white", command=lambda: update_score(locali_score, -1, locali_score_display)).grid(row=2, column=0)
 
-# Pulsanti PERIOD del controller
-tk.Button(controller, text="+ Period", font=("Arial", 30), bg="white", command=lambda: update_period(period_value, 1, period_value_display)).grid(row=0, column=1)
-tk.Button(controller, text="- Period", font=("Arial", 30), bg="white", command=lambda: update_period(period_value, -1, period_value_display)).grid(row=2, column=1)
+tk.Button(controller, text="+VISITOR", font=("Arial", 70), bg="white", command=lambda: update_score(ospiti_score, 1, ospiti_score_display)).grid(row=0, column=2)
+tk.Button(controller, text="-VISITOR", font=("Arial", 70), bg="white", command=lambda: update_score(ospiti_score, -1, ospiti_score_display)).grid(row=2, column=2)
 
-#  Pulsanti TIMER del controller
-tk.Button(controller, text="Imposta Tempo", font=small_font, bg="white", command=set_time).grid(row=3, column=0)
-start_stop_button = tk.Button(controller, text="START", font=("Arial", 60), bg="green", command=start_stop_timer)
+tk.Button(controller, text="+ Period", font=("Arial", 50), bg="white", command=lambda: update_period(period_value, 1, period_value_display)).grid(row=0, column=1)
+tk.Button(controller, text="- Period", font=("Arial", 50), bg="white", command=lambda: update_period(period_value, -1, period_value_display)).grid(row=2, column=1)
+
+tk.Button(controller, text="Set Timer", font=("Arial", 40), bg="white", command=set_time).grid(row=3, column=0)
+start_stop_button = tk.Button(controller, text="START", font=("Arial", 80), bg="green", command=start_stop_timer)
 start_stop_button.grid(row=3, column=1)
-tk.Button(controller, text="Reset Timer", font=small_font, bg="white", command=reset_timer).grid(row=3, column=2)
+tk.Button(controller, text="Reset Timer", font=("Arial", 40), bg="white", command=reset_timer).grid(row=3, column=2)
 
-# Pulsanti per cambiare i nomi delle squadre
-tk.Button(controller, text="Cambia Nome HOME", font=small_font, bg="white", command=lambda: change_team_name("locali")).grid(row=4, column=0, pady=10)
-tk.Button(controller, text="Cambia Nome VISITOR", font=small_font, bg="white", command=lambda: change_team_name("ospiti")).grid(row=4, column=2, pady=10)
+tk.Button(controller, text="Cambia Nome HOME", font=("Arial", 30), bg="white", command=lambda: change_team_name("HOME", controller)).grid(row=4, column=0, pady=10)
+tk.Button(controller, text="Cambia Nome VISITOR", font=("Arial", 30), bg="white", command=lambda: change_team_name("VISITOR", controller)).grid(row=4, column=2, pady=10)
 
-print("\n********************************************************************")
-print("Prima dell'avvio in impostazioni >> sistema >> schermo \nselezionare il monitor secondario e spuntare \"Imposta come schermo principale\"")
-print("********************************************************************")
-print("\nHandcrafted by Vincenzo Morabito\n")
-print("********************************************************************")
+# Mostra il messaggio informativo con le opzioni Sì e No
+response = messagebox.askyesno(
+    "Benvenuto",
+    (
+        "Benvenuto nel Segnapunti di Basket!\n\n"
+        "Nel caso in cui non sia stato fatto, bisogna impostare lo schermo collegato come principale:\n\n"
+        "1. Vai su *Impostazioni > Sistema > Schermo*.\n"
+        "2. Seleziona il monitor secondario.\n"
+        "3. Spunta \"Imposta come schermo principale\".\n\n"
+        "Lo schermo collegato è stato già impostato come principale?"
+    ),
+    parent=controller  # Associa il messaggio alla finestra del controller
+)
+
+# Se l'utente risponde "No", chiudi l'applicazione
+if not response:
+    controller.destroy()
+    tabellone.destroy()
 
 controller.mainloop()
