@@ -59,10 +59,22 @@ def update_period(label, increment, period_display_label=None):
     except ValueError:
         label.config(text="1QT")
 
-def update_time(label, minutes, seconds, time_display_label=None):
-    """Aggiorna il tempo visualizzato e, se fornito, aggiorna anche l'etichetta nel CONTROLLER."""
-    label.config(text=f"{minutes}:{seconds:02d}")
-    time_display_label.config(text=f"{minutes}:{seconds:02d}")  # Aggiorna l'etichetta nel CONTROLLER
+def update_time(label, time_ms, time_display_label=None):
+    """Aggiorna il tempo visualizzato (minuti:secondi o secondi:millesimi)."""
+    if time_ms < 60000:
+        # Quando il tempo è inferiore a un minuto, mostra il formato secondi:millesimi
+        seconds = time_ms // 1000
+        milliseconds = time_ms % 1000
+        label.config(text=f"{seconds:02}:{milliseconds:03}")
+        if time_display_label:
+            time_display_label.config(text=f"{seconds:02}:{milliseconds:03}")
+    else:
+        # Altrimenti, mostra il formato minuti:secondi
+        minutes = time_ms // 60000
+        seconds = (time_ms % 60000) // 1000
+        label.config(text=f"{minutes}:{seconds:02}")
+        if time_display_label:
+            time_display_label.config(text=f"{minutes}:{seconds:02}")
 
 def set_time():
     """Imposta il tempo iniziale."""
@@ -72,9 +84,9 @@ def set_time():
     seconds = simpledialog.askinteger("Imposta Tempo", "Inserisci solo il numero dei secondi (da 0 a 59), se 0 scrivi 0:", parent=controller)
     if seconds is None or seconds > 60:
         return
-    global remaining_time
-    remaining_time = max(0, minutes * 60 + seconds)
-    update_time(time_label, minutes, seconds, time_label_display)
+    global remaining_time_ms
+    remaining_time_ms = max(0, minutes * 60 * 1000 + seconds * 1000)
+    update_time(time_label, remaining_time_ms, time_label_display)
     start_stop_button.config(state="normal")
 
 def start_stop_timer():
@@ -87,22 +99,20 @@ def start_stop_timer():
 
 def reset_timer():
     """Resetta il timer al valore iniziale."""
-    global running, remaining_time
+    global running, remaining_time_ms
     running = False
     start_stop_button.config(text="START", bg="green")
-    remaining_time = 600
-    update_time(time_label, 10, 0, time_label_display)
+    remaining_time_ms = 600000  # 10 minuti in millisecondi
+    update_time(time_label, remaining_time_ms, time_label_display)
 
 def start_timer():
-    """Decrementa il timer ogni secondo."""
-    global remaining_time
-    if running and remaining_time > 0:
-        remaining_time -= 1
-        minutes = remaining_time // 60
-        seconds = remaining_time % 60
-        update_time(time_label, minutes, seconds, time_label_display)
-        tabellone.after(1000, start_timer)
-    elif remaining_time == 0:  # Quando il tempo arriva a zero, suona l'allarme
+    """Decrementa il timer ogni millisecondo."""
+    global remaining_time_ms
+    if running and remaining_time_ms > 0:
+        remaining_time_ms -= 100  # Decresce di 100 millisecondi (0.1 secondo)
+        update_time(time_label, remaining_time_ms, time_label_display)
+        tabellone.after(100, start_timer)  # Riprova ogni 100 millisecondi
+    elif remaining_time_ms <= 0:  # Quando il tempo arriva a zero, suona l'allarme
         play_alarm_sound()
 
 def change_team_name(team, parent):
@@ -123,7 +133,7 @@ def on_close_controller():
 
 # Configurazioni iniziali
 running = False
-remaining_time = 600
+remaining_time_ms = 600000  # 10 minuti in millisecondi
 
 # Creazione del TABELLONE
 tabellone = tk.Tk()
@@ -173,7 +183,7 @@ controller.protocol("WM_DELETE_WINDOW", on_close_controller)
 # Posiziona la finestra CONTROLLER sul monitor secondario
 set_controller_on_secondary_screen()
 
-# Comando per bind barra sbaziatrice <---> Start/Stop Timer
+# Comando per bind barra spaziatrice <---> Start/Stop Timer
 controller.bind("<space>", handle_spacebar)
 
 button_frame = tk.Frame(controller, bg="blue")
@@ -207,8 +217,8 @@ start_stop_button = tk.Button(controller, text="START", font=("Arial", 80), bg="
 start_stop_button.grid(row=3, column=1)
 tk.Button(controller, text="Reset Timer", font=("Arial", 40), bg="white", command=reset_timer).grid(row=3, column=2)
 
-tk.Button(controller, text="Cambia Nome HOME", font=("Arial", 30), bg="white", command=lambda: change_team_name("HOME", controller)).grid(row=4, column=0, pady=10)
-tk.Button(controller, text="Cambia Nome GUEST", font=("Arial", 30), bg="white", command=lambda: change_team_name("GUEST", controller)).grid(row=4, column=2, pady=10)
+tk.Button(controller, text="Nome HOME", font=("Arial", 30), bg="white", command=lambda: change_team_name("HOME", controller)).grid(row=4, column=0, pady=10)
+tk.Button(controller, text="Nome GUEST", font=("Arial", 30), bg="white", command=lambda: change_team_name("GUEST", controller)).grid(row=4, column=2, pady=10)
 
 # Mostra il messaggio informativo con le opzioni Sì e No
 response = messagebox.askyesno(
