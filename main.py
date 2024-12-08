@@ -11,7 +11,7 @@ pygame.mixer.init()
 
 # Funzione per riprodurre il suono
 def play_alarm_sound():
-    pygame.mixer.music.load("Buzzer.wav")  # Carica il file audio (modifica il percorso se necessario)
+    pygame.mixer.music.load("data/Buzzer.wav")  # Carica il file audio (modifica il percorso se necessario)
     pygame.mixer.music.play()  # Riproduce il suono
 
 # Funzione per aprire la finestra CONTROLLER sul monitor secondario
