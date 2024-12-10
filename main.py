@@ -184,7 +184,7 @@ period_value_display = tk.Label(controller, text="1QT", bg="black", fg="red", fo
 period_value_display.grid(row=1, column=1)
 
 # Etichetta per visualizzare il tempo nel CONTROLLER
-time_label_display = tk.Label(controller, text="10:00:000", bg="black", fg="red", font=("Arial", 100))
+time_label_display = tk.Label(controller, text="10:00", bg="black", fg="red", font=("Arial", 100))
 time_label_display.grid(row=4, column=1)
 
 # Pulsanti e funzioni per il CONTROLLER
