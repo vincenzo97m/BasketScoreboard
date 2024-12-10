@@ -3,29 +3,16 @@ from tkinter import font, simpledialog, messagebox
 import pygame
 from screeninfo import get_monitors
 
+#COSTANTI
+INITIAL_TIME_MS = 600  # 10 minuti in millisecondi
+
 # Inizializza pygame per gestire il suono
 pygame.mixer.init()
 
 # Funzione per riprodurre il suono
 def play_alarm_sound():
-    pygame.mixer.music.load("Buzzer.wav")  # Carica il file audio (modifica il percorso se necessario)
+    pygame.mixer.music.load("data/Buzzer.wav")  # Carica il file audio (modifica il percorso se necessario)
     pygame.mixer.music.play()  # Riproduce il suono
-
-# Funzione per spostare la finestra nel monitor secondario
-def set_fullscreen_on_secondary_screen():
-    monitors = get_monitors()  # Ottieni tutte le informazioni sugli schermi connessi
-    if len(monitors) > 1:
-        # Se ci sono più monitor, seleziona quello principale
-        secondary_monitor = monitors[1]
-
-        # Imposta la finestra per il monitor principale
-        tabellone.lift()
-        tabellone.geometry(
-            f"{secondary_monitor.width}x{secondary_monitor.height}+{secondary_monitor.x}+{secondary_monitor.y}")
-        # Rendi la finestra fullscreen
-        tabellone.attributes('-fullscreen', True)
-    else:
-        print("\n\n!!!!!Non ci sono schermi secondari connessi.!!!!!")
 
 # Funzione per aprire la finestra CONTROLLER sul monitor secondario
 def set_controller_on_secondary_screen():
@@ -33,12 +20,20 @@ def set_controller_on_secondary_screen():
     if len(monitors) > 1:
         # Se ci sono più monitor, seleziona il secondario
         primary_monitor = monitors[0]
-
         # Imposta la finestra per il monitor secondario
         controller.geometry(
             f"{primary_monitor.width}x{primary_monitor.height}+{primary_monitor.x}+{primary_monitor.y}")
-    else:
-        print("\n\n!!!!!Non ci sono schermi secondari connessi.!!!!!")
+
+# Funzione per aprire la finestra TABELLONE sul monitor secondario
+def set_fullscreen_on_primary_screen():
+    monitors = get_monitors()  # Ottieni tutte le informazioni sugli schermi connessi
+    if len(monitors) > 1:
+        secondary_monitor = monitors[1] # Se ci sono più monitor, seleziona quello principale
+        # Imposta la finestra per il monitor principale
+        tabellone.geometry(
+            f"{secondary_monitor.width}x{secondary_monitor.height}+{secondary_monitor.x}+{secondary_monitor.y}")
+        # Rendi la finestra fullscreen
+        tabellone.attributes('-fullscreen', True)
 
 # Funzioni per gestire il tabellone
 def update_score(label, increment, display_label=None):
@@ -59,22 +54,10 @@ def update_period(label, increment, period_display_label=None):
     except ValueError:
         label.config(text="1QT")
 
-def update_time(label, time_ms, time_display_label=None):
+def update_time(label, minutes, seconds, time_display_label=None):
     """Aggiorna il tempo visualizzato (minuti:secondi o secondi:millesimi)."""
-    if time_ms < 60000:
-        # Quando il tempo è inferiore a un minuto, mostra il formato secondi:millesimi
-        seconds = time_ms // 1000
-        milliseconds = time_ms % 1000
-        label.config(text=f"{seconds:02}:{milliseconds:03}")
-        if time_display_label:
-            time_display_label.config(text=f"{seconds:02}:{milliseconds:03}")
-    else:
-        # Altrimenti, mostra il formato minuti:secondi
-        minutes = time_ms // 60000
-        seconds = (time_ms % 60000) // 1000
-        label.config(text=f"{minutes}:{seconds:02}")
-        if time_display_label:
-            time_display_label.config(text=f"{minutes}:{seconds:02}")
+    label.config(text=f"{minutes}:{seconds:02}")
+    time_display_label.config(text=f"{minutes}:{seconds:02}")
 
 def set_time():
     """Imposta il tempo iniziale."""
@@ -84,9 +67,9 @@ def set_time():
     seconds = simpledialog.askinteger("Imposta Tempo", "Inserisci solo il numero dei secondi (da 0 a 59), se 0 scrivi 0:", parent=controller)
     if seconds is None or seconds > 60:
         return
-    global remaining_time_ms
-    remaining_time_ms = max(0, minutes * 60 * 1000 + seconds * 1000)
-    update_time(time_label, remaining_time_ms, time_label_display)
+    global remaining_time
+    remaining_time = max(0, minutes * 60 + seconds)
+    update_time(time_label, minutes, seconds, time_label_display)
     start_stop_button.config(state="normal")
 
 def start_stop_timer():
@@ -99,20 +82,22 @@ def start_stop_timer():
 
 def reset_timer():
     """Resetta il timer al valore iniziale."""
-    global running, remaining_time_ms
+    global running, remaining_time
     running = False
     start_stop_button.config(text="START", bg="green")
-    remaining_time_ms = 600000  # 10 minuti in millisecondi
-    update_time(time_label, remaining_time_ms, time_label_display)
+    remaining_time = INITIAL_TIME_MS
+    update_time(time_label, 10, 0, time_label_display)
 
 def start_timer():
-    """Decrementa il timer ogni millisecondo."""
-    global remaining_time_ms
-    if running and remaining_time_ms > 0:
-        remaining_time_ms -= 100  # Decresce di 100 millisecondi (0.1 secondo)
-        update_time(time_label, remaining_time_ms, time_label_display)
-        tabellone.after(100, start_timer)  # Riprova ogni 100 millisecondi
-    elif remaining_time_ms <= 0:  # Quando il tempo arriva a zero, suona l'allarme
+    """Decrementa il timer ogni secondo."""
+    global remaining_time
+    if running and remaining_time > 0:
+        remaining_time -= 1
+        minutes = remaining_time // 60
+        seconds = remaining_time % 60
+        update_time(time_label, minutes, seconds, time_label_display)
+        tabellone.after(1000, start_timer)
+    elif remaining_time == 0:  # Quando il tempo arriva a zero, suona l'allarme
         play_alarm_sound()
 
 def change_team_name(team, parent):
@@ -133,7 +118,7 @@ def on_close_controller():
 
 # Configurazioni iniziali
 running = False
-remaining_time_ms = 600000  # 10 minuti in millisecondi
+remaining_time = INITIAL_TIME_MS
 
 # Creazione del TABELLONE
 tabellone = tk.Tk()
@@ -141,7 +126,7 @@ tabellone.title("Tabellone Segnapunti Basket")
 tabellone.configure(bg="black")
 tabellone.grid_anchor("center")
 
-set_fullscreen_on_secondary_screen()
+set_fullscreen_on_primary_screen()
 
 # Font più grandi per punteggio e tempo
 score_font = font.Font(family="2 5x9 Scoreboard", size=125, weight="bold")
@@ -169,7 +154,7 @@ time_label.grid(row=0, columnspan=3, stick="nsew")
 
 # Funzione per gestire la cattura della barra spaziatrice
 def handle_spacebar(event):
-    """Gestisce la pressione della barra spaziatrice per avviare o fermare il timer."""
+    """Barra spaziatrice per avviare o fermare il timer."""
     start_stop_timer()
     return "break"
 
@@ -199,7 +184,7 @@ period_value_display = tk.Label(controller, text="1QT", bg="black", fg="red", fo
 period_value_display.grid(row=1, column=1)
 
 # Etichetta per visualizzare il tempo nel CONTROLLER
-time_label_display = tk.Label(controller, text="10:00", bg="black", fg="red", font=("Arial", 100))
+time_label_display = tk.Label(controller, text="10:00:000", bg="black", fg="red", font=("Arial", 100))
 time_label_display.grid(row=4, column=1)
 
 # Pulsanti e funzioni per il CONTROLLER
@@ -220,23 +205,47 @@ tk.Button(controller, text="Reset Timer", font=("Arial", 40), bg="white", comman
 tk.Button(controller, text="Nome HOME", font=("Arial", 30), bg="white", command=lambda: change_team_name("HOME", controller)).grid(row=4, column=0, pady=10)
 tk.Button(controller, text="Nome GUEST", font=("Arial", 30), bg="white", command=lambda: change_team_name("GUEST", controller)).grid(row=4, column=2, pady=10)
 
+# Mostra il messaggio informativo di un solo monitor presente.
+monitorMessage = messagebox
+if len(get_monitors()) == 1:
+    monitorMessage = messagebox.askyesno(
+        "Tabellone Segnapunti - Monitor Error",
+        (
+            "Non ci sono schermi secondari connessi.\n"
+            "Vuoi continuare?"
+        ),
+        parent=controller  # Associa il messaggio alla finestra del CONTROLLER
+    )
+if not monitorMessage:
+    exit()
+
 # Mostra il messaggio informativo con le opzioni Sì e No
-response = messagebox.askyesno(
+welcomeMessage = messagebox.askyesno(
     "Benvenuto",
     (
         "Benvenuto nel Segnapunti di Basket!\n\n"
-        "Nel caso in cui non sia stato fatto, bisogna impostare lo schermo collegato come principale:\n\n"
+        "Nel caso in cui non sia stato fatto, bisogna impostare \nlo schermo collegato come principale:\n\n"
         "1. Vai su *Impostazioni > Sistema > Schermo*.\n"
         "2. Seleziona il monitor secondario.\n"
         "3. Spunta \"Imposta come schermo principale\".\n\n"
-        "Lo schermo collegato è stato già impostato come principale?"
+        "Lo schermo collegato è già impostato come principale?"
     ),
     parent=controller  # Associa il messaggio alla finestra del CONTROLLER
 )
-
 # Se l'utente risponde "No", chiudi l'applicazione
-if not response:
-    controller.destroy()
-    tabellone.destroy()
+if not welcomeMessage:
+    exit()
+
+infoMessage = messagebox.showinfo(
+    "Nomi squadre e istruzioni",
+    (
+        "Per START e STOP del cronometro puoi anche usare la barra spaziatrice della tastiera.\n\n"
+        "Premi OK per inserire i nomi delle squadre, se vuoi lasciare HOME e GUEST premi Cancel."
+    ),
+    parent=controller  # Associa il messaggio alla finestra del CONTROLLER
+)
+if infoMessage:
+    change_team_name("HOME", controller)
+    change_team_name("GUEST", controller)
 
 controller.mainloop()
