@@ -316,25 +316,6 @@ Progetto ad uso privato e personale.
 
 **vincenzo97m**
 
-## 💡 Suggerimenti
-
-- 🖥️ Usa un **TV/Proiettore grande** per il tabellone
-- ⌨️ Tieni una **tastiera wireless** vicino al tavolo segnapunti per controllo rapido
-- 🔊 Collega **speaker esterni** per un buzzer più potente
-- 📱 In alternativa, puoi usare un **tablet** come controller con software di desktop remoto
-- 🎥 Per streaming: usa software come OBS per catturare solo la finestra del tabellone
-
-## 🚀 Sviluppi Futuri (Opzionale)
-
-- [ ] Statistiche giocatori (falli, assist, rimbalzi)
-- [ ] Salvataggio partite
-- [ ] Modalità torneo con bracket
-- [ ] Controllo remoto via web/mobile
-- [ ] Skin/temi personalizzabili
-- [ ] Export risultati in PDF
-
 ---
-
-**⚡ Pro Tip:** Configura un hotkey di sistema per rendere fullscreen la finestra del tabellone con un singolo tasto!
 
 **🏀 Buona Partita!**
